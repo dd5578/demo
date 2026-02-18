@@ -1,0 +1,61 @@
+:root {
+  --bg-flow: radial-gradient(circle at 10% 20%, rgba(250, 208, 196, 0.8) 0%, transparent 40%),
+             radial-gradient(circle at 90% 10%, rgba(224, 195, 252, 0.8) 0%, transparent 40%),
+             radial-gradient(circle at 50% 90%, rgba(161, 196, 253, 0.6) 0%, transparent 50%),
+             #fff9f5;
+  --text-primary: #4a4a4a;
+  --text-secondary: #7a7a7a;
+  --accent-gold: #cfaa6e;
+  --line-color: #555;
+  --font-serif: 'Songti SC', 'Noto Serif SC', 'STSong', 'Times New Roman', serif;
+}
+
+body {
+  font-family: var(--font-serif);
+  background: var(--bg-flow);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  margin: 0;
+  padding: 40px 20px;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7z' fill='%23d4af37' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: -1;
+}
+
+#app {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: #535bf2;
+}

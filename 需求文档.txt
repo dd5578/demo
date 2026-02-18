@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>面部美学解析 | 铛铛实验室</title>
+    <style>
+        /* --- 基础设定：水彩与纸张质感 --- */
+        :root {
+            --bg-flow: radial-gradient(circle at 10% 20%, rgba(250, 208, 196, 0.8) 0%, transparent 40%),
+                       radial-gradient(circle at 90% 10%, rgba(224, 195, 252, 0.8) 0%, transparent 40%),
+                       radial-gradient(circle at 50% 90%, rgba(161, 196, 253, 0.6) 0%, transparent 50%),
+                       #fff9f5;
+            --text-primary: #4a4a4a;
+            --text-secondary: #7a7a7a;
+            --accent-gold: #cfaa6e;
+            --line-color: #555;
+            --font-serif: 'Songti SC', 'Noto Serif SC', 'STSong', 'Times New Roman', serif;
+        }
+
+        body {
+            font-family: var(--font-serif);
+            background: var(--bg-flow);
+            background-attachment: fixed; /* 让背景像画布一样固定 */
+            color: var(--text-primary);
+            margin: 0;
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        /* 纸张纹理叠加 */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7z' fill='%23d4af37' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* --- 主容器：画框结界 --- */
+        .main-frame-outer {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 15px; /* 外框留白 */
+            box-shadow: 0 20px 50px rgba(100, 100, 100, 0.1);
+            border: 1px solid #fff;
+        }
+
+        .main-frame-inner {
+            border: 2px solid var(--text-primary); /* 内实线框 */
+            padding: 40px;
+            position: relative;
+            background: #fdfdfd;
+        }
+
+        /* 角落装饰 (Corner Decorations) */
+        .corner-deco {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border: 1px solid var(--text-primary);
+            background: #fff;
+        }
+        .tl { top: -5px; left: -5px; }
+        .tr { top: -5px; right: -5px; }
+        .bl { bottom: -5px; left: -5px; }
+        .br { bottom: -5px; right: -5px; }
+
+        /* --- 头部排版 --- */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: normal;
+            letter-spacing: 5px;
+            margin: 0 0 10px 0;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.05);
+        }
+
+        .subtitle {
+            font-family: 'Times New Roman', serif;
+            font-size: 12px;
+            letter-spacing: 2px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        /* --- 交互区域 (Upload) --- */
+        .input-section {
+            text-align: center;
+            transition: opacity 0.5s;
+        }
+
+        .upload-box {
+            border: 1px dashed var(--line-color);
+            padding: 60px 20px;
+            margin: 30px auto;
+            max-width: 400px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+
+        .upload-box:hover {
+            border-color: var(--accent-gold);
+            background: #fff;
+        }
+
+        .btn-classic {
+            background: transparent;
+            border: 1px solid var(--text-primary);
+            color: var(--text-primary);
+            padding: 12px 40px;
+            font-family: var(--font-serif);
+            font-size: 16px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-classic:hover {
+            background: var(--text-primary);
+            color: #fff;
+        }
+
+        /* --- 结果区域 (The Report) --- */
+        .result-section {
+            display: none; /* 初始隐藏 */
+            animation: fadeIn 1s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 1. 星盘雷达图 (The Star Map) */
+        .hero-section {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 50px;
+            gap: 40px;
+        }
+
+        .radar-chart-container {
+            width: 260px;
+            height: 260px;
+            position: relative;
+        }
+
+        .score-display {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            font-family: 'Times New Roman', serif;
+        }
+        .score-val { font-size: 36px; color: var(--accent-gold); font-weight: bold; }
+        .score-label { font-size: 12px; color: #999; display: block; }
+
+        .summary-text {
+            max-width: 350px;
+            text-align: justify;
+            line-height: 1.8;
+            font-size: 14px;
+            border-left: 2px solid var(--accent-gold);
+            padding-left: 20px;
+        }
+
+        /* 2. 板块通用样式 */
+        .section-block {
+            margin-bottom: 40px;
+            border: 1px solid #eee;
+            background: rgba(255,255,255,0.5);
+            padding: 25px;
+            position: relative;
+        }
+        
+        /* 装饰性标题 */
+        .block-title {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--accent-gold);
+            display: inline-block;
+            padding-bottom: 5px;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* 3. 风格定位 (Style) */
+        .style-card {
+            text-align: center;
+        }
+        .style-main { font-size: 24px; margin-bottom: 5px; }
+        .style-sub { color: var(--text-secondary); font-size: 14px; font-style: italic; }
+        .tags-container { margin-top: 15px; }
+        .tag {
+            display: inline-block;
+            border: 1px solid #ccc;
+            padding: 4px 12px;
+            font-size: 12px;
+            margin: 0 5px;
+            color: #666;
+            background: #fff;
+        }
+
+        /* 4. 面相网格 (Physiognomy) */
+        .physio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .physio-item {
+            background: #fffbf0;
+            border: 1px solid #f3e5c2;
+            padding: 15px;
+            font-size: 13px;
+        }
+        .physio-item strong { display: block; margin-bottom: 5px; color: #8d6e3f; }
+
+        /* 5. 变美指南 (Advice) */
+        .advice-list {
+            list-style: none;
+            padding: 0;
+        }
+        .advice-list li {
+            margin-bottom: 10px;
+            padding-left: 15px;
+            position: relative;
+        }
+        .advice-list li::before {
+            content: "✦";
+            position: absolute;
+            left: 0;
+            color: var(--accent-gold);
+            font-size: 10px;
+            top: 2px;
+        }
+
+        /* SVG Styles */
+        .radar-bg { fill: none; stroke: #e0e0e0; stroke-width: 1; }
+        .radar-axis { stroke: #eee; stroke-width: 1; }
+        .radar-path { 
+            fill: rgba(157, 142, 195, 0.3); 
+            stroke: #9d8ec3; 
+            stroke-width: 2; 
+        }
+        .radar-text { font-size: 10px; fill: #666; font-family: var(--font-serif); }
+
+    </style>
+</head>
+<body>
+
+    <div class="main-frame-outer">
+        <div class="main-frame-inner">
+            <!-- 装饰角标 -->
+            <div class="corner-deco tl"></div>
+            <div class="corner-deco tr"></div>
+            <div class="corner-deco bl"></div>
+            <div class="corner-deco br"></div>
+
+            <div class="header">
+                <h1>美学解析书</h1>
+                <div class="subtitle">AESTHETICS & PHYSIOGNOMY REPORT</div>
+            </div>
+
+            <!-- 1. 输入区域 -->
+            <div id="inputSection" class="input-section">
+                <div class="upload-box" onclick="triggerAnalysis()">
+                    <div style="font-size: 30px; margin-bottom: 10px;">❦</div>
+                    <div>点击载入影像</div>
+                    <div style="font-size: 12px; color: #999; margin-top: 5px;">IMAGE UPLOAD</div>
+                </div>
+                <button class="btn-classic" onclick="triggerAnalysis()">开始解析</button>
+            </div>
+
+            <!-- 2. 结果区域 (预制数据) -->
+            <div id="resultSection" class="result-section">
+                
+                <!-- 核心：星盘与总评 -->
+                <div class="hero-section">
+                    <div class="radar-chart-container">
+                        <svg width="260" height="260" viewBox="0 0 200 200">
+                            <!-- 蜘蛛网底图 (Hexagon) -->
+                            <polygon points="100,20 170,60 170,140 100,180 30,140 30,60" class="radar-bg" />
+                            <polygon points="100,40 152,70 152,130 100,160 48,130 48,70" class="radar-bg" />
+                            <polygon points="100,60 135,80 135,120 100,140 65,120 65,80" class="radar-bg" />
+                            
+                            <!-- 轴线 -->
+                            <line x1="100" y1="100" x2="100" y2="20" class="radar-axis"/>
+                            <line x1="100" y1="100" x2="170" y2="60" class="radar-axis"/>
+                            <line x1="100" y1="100" x2="170" y2="140" class="radar-axis"/>
+                            <line x1="100" y1="100" x2="100" y2="180" class="radar-axis"/>
+                            <line x1="100" y1="100" x2="30" y2="140" class="radar-axis"/>
+                            <line x1="100" y1="100" x2="30" y2="60" class="radar-axis"/>
+
+                            <!-- 数据文字 -->
+                            <text x="100" y="15" text-anchor="middle" class="radar-text">骨相</text>
+                            <text x="180" y="60" text-anchor="start" class="radar-text">皮相</text>
+                            <text x="180" y="145" text-anchor="start" class="radar-text">五官</text>
+                            <text x="100" y="195" text-anchor="middle" class="radar-text">风格</text>
+                            <text x="20" y="145" text-anchor="end" class="radar-text">比例</text>
+                            <text x="20" y="60" text-anchor="end" class="radar-text">气色</text>
+
+                            <!-- 动态数据多边形 (Points 对应预制数据) -->
+                            <polygon points="100,30 160,65 155,130 100,165 50,135 40,70" class="radar-path">
+                                <animate attributeName="opacity" from="0" to="0.8" dur="1.5s" fill="freeze" />
+                            </polygon>
+                        </svg>
+                        
+                        <div class="score-display">
+                            <span class="score-val">92</span>
+                            <span class="score-label">总评分</span>
+                        </div>
+                    </div>
+
+                    <div class="summary-text">
+                        <strong>“轮廓如月，气韵天成”</strong><br><br>
+                        检测到您的面部折叠度高，骨相支撑力佳，属于典型的“清冷骨感”架构。皮相干净，气色红润，无需过多修饰即可显露贵气。眉眼间距开阔，不仅显得大气，在面相学中也象征着较好的贵人运。
+                    </div>
+                </div>
+
+                <!-- 风格定位 -->
+                <div class="section-block">
+                    <div class="block-title">风格定位 / STYLE</div>
+                    <div class="style-card">
+                        <div class="style-main">清冷骨感</div>
+                        <div class="style-sub">High Intellectual Beauty</div>
+                        <div class="tags-container">
+                            <span class="tag"># 高智感</span>
+                            <span class="tag"># 英气</span>
+                            <span class="tag"># 疏离美</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 面相灵解 -->
+                <div class="section-block">
+                    <div class="block-title">面相灵解 / PHYSIOGNOMY</div>
+                    <div class="physio-grid">
+                        <div class="physio-item">
+                            <strong>☯️ 三庭比例</strong>
+                            上庭饱满，象征早年运势顺遂；中庭微长，主智力超群，适合从事脑力工作。
+                        </div>
+                        <div class="physio-item">
+                            <strong>👁️ 眉眼之间</strong>
+                            眉眼间距宽，田宅宫开阔，心胸宽广，且有不错的房产运或家庭福泽。
+                        </div>
+                        <div class="physio-item">
+                            <strong>👃 鼻相解析</strong>
+                            鼻梁挺拔有力，山根高耸，意味着意志坚定，财运亨通，是典型的“富贵鼻”。
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 变美指南 -->
+                <div class="section-block">
+                    <div class="block-title">变美指南 / GUIDE</div>
+                    <ul class="advice-list">
+                        <li><strong>妆容思路：</strong> 您的五官线条清晰，建议走“减法妆容”。保留原生眉毛的毛流感，眼妆以消肿大地色为主，切忌浓妆艳抹掩盖了骨相的清透。</li>
+                        <li><strong>发型建议：</strong> 适合露出额头的大波浪或高颅顶扎发，避免厚重刘海压低运势。</li>
+                        <li><strong>色彩能量：</strong> 适合冷色调（如雾霾蓝、清冷灰），能更好地衬托出您沉静的气质。</li>
+                    </ul>
+                </div>
+
+                <div style="text-align: center; font-size: 12px; color: #ccc; margin-top: 30px;">
+                    ✦ 影像仅用于本地解析，能量不外泄 ✦
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 简单的交互逻辑：点击上传后，模拟加载，然后显示结果
+        function triggerAnalysis() {
+            const inputSection = document.getElementById('inputSection');
+            const resultSection = document.getElementById('resultSection');
+            const btn = document.querySelector('.btn-classic');
+            
+            // 更改按钮状态
+            btn.innerHTML = "能量解析中...";
+            btn.style.opacity = "0.7";
+            
+            // 模拟 1.5秒 的计算时间
+            setTimeout(() => {
+                inputSection.style.display = 'none';
+                resultSection.style.display = 'block';
+                // 滚动到顶部
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 1500);
+        }
+    </script>
+
+</body>
+</html>
