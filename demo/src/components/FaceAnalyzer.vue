@@ -9,34 +9,13 @@
         <div class="corner-deco br"></div>
 
         <div class="header">
-          <h1>星野AI面部美学分析</h1>
+          <h1>美学解析书</h1>
           <div class="subtitle">AESTHETICS & PHYSIOGNOMY REPORT</div>
         </div>
 
         <!-- Input Section -->
         <div v-if="!analysisResult" class="input-section">
           
-          <!-- Gender Selection -->
-          <div class="gender-selection">
-            <h3 class="instruction-text">请选择您的性别以获得精准分析</h3>
-            <div class="gender-options">
-              <div 
-                class="gender-option" 
-                :class="{ active: gender === 'female' }"
-                @click="gender = 'female'"
-              >
-                <span>👧 女生</span>
-              </div>
-              <div 
-                class="gender-option" 
-                :class="{ active: gender === 'male' }"
-                @click="gender = 'male'"
-              >
-                <span>👦 男生</span>
-              </div>
-            </div>
-          </div>
-
           <el-tabs v-model="activeTab" class="custom-tabs" stretch>
             <el-tab-pane label="上传照片" name="upload">
               <div class="upload-box">
@@ -82,6 +61,26 @@
             <button class="btn-classic main-action" @click="analyzeFace" :disabled="analyzing">
               {{ analyzing ? '能量解析中...' : '开始解析' }}
             </button>
+          </div>
+
+          <div class="gender-selection">
+            <h3 class="instruction-text">请选择您的性别以获得精准分析</h3>
+            <div class="gender-options">
+              <div 
+                class="gender-option" 
+                :class="{ active: gender === 'female' }"
+                @click="gender = 'female'"
+              >
+                <span>👧 女生</span>
+              </div>
+              <div 
+                class="gender-option" 
+                :class="{ active: gender === 'male' }"
+                @click="gender = 'male'"
+              >
+                <span>👦 男生</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -138,7 +137,7 @@
                   </div>
                 </div>
                 <div class="info-group">
-                  <span class="label">相似明星</span>
+                  <span class="label">参考明星风格</span>
                   <div class="star-text">
                      {{ analysisResult.style.similarStars.join(' | ') }}
                   </div>
@@ -161,11 +160,11 @@
 
           <!-- Star Match -->
           <div class="section-block" v-if="analysisResult.starMatch">
-            <div class="block-title">撞脸明星 / CELEBRITY</div>
+            <div class="block-title">参考明星风格 / CELEBRITY</div>
             <div class="star-grid">
               <div v-for="star in analysisResult.starMatch" :key="star.name" class="star-card">
                 <div class="star-name">{{ star.name }}</div>
-                <div class="star-percent">相似度 {{ star.percent }}%</div>
+                <div class="star-style">{{ star.style }}</div>
                 <div class="star-desc">{{ star.desc }}</div>
               </div>
             </div>
@@ -643,7 +642,11 @@ const getFeatureIcon = (key) => {
   display: flex;
   justify-content: center;
   gap: 20px;
-  margin-bottom: 30px;
+  margin: 15px 0 0;
+}
+
+.gender-selection {
+  margin-top: 30px;
 }
 
 .gender-option {
@@ -1057,6 +1060,129 @@ const getFeatureIcon = (key) => {
   text-transform: uppercase;
 }
 
+@media (max-width: 960px) {
+  .main-frame-inner {
+    padding: 32px;
+  }
+
+  .summary-text-box {
+    min-width: 0;
+  }
+
+  .style-info-grid {
+    gap: 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .face-analyzer-container {
+    padding: 20px 12px;
+  }
+
+  .main-frame-outer {
+    padding: 12px;
+  }
+
+  .main-frame-inner {
+    padding: 24px;
+  }
+
+  .header h1 {
+    font-size: 24px;
+    letter-spacing: 3px;
+  }
+
+  .hero-section {
+    gap: 20px;
+  }
+
+  .radar-chart-container {
+    width: 220px;
+    height: 220px;
+  }
+
+  .score-val {
+    font-size: 30px;
+  }
+
+  .result-actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .gender-options {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .upload-box {
+    padding: 40px 16px;
+  }
+
+  .btn-classic {
+    padding: 10px 22px;
+    font-size: 14px;
+    margin: 4px 6px;
+  }
+
+  .section-block {
+    padding: 18px;
+  }
+
+  .style-info-grid {
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .physio-grid,
+  .features-list-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .header h1 {
+    font-size: 20px;
+    letter-spacing: 2px;
+  }
+
+  .welcome-text {
+    font-size: 20px;
+  }
+
+  .summary-content {
+    font-size: 13px;
+  }
+
+  .block-title {
+    font-size: 16px;
+  }
+
+  .score-val {
+    font-size: 26px;
+  }
+
+  .science-block {
+    padding: 20px 16px;
+  }
+
+  .science-content-premium {
+    padding: 0;
+    max-width: 100%;
+    word-break: break-word;
+  }
+
+  .science-body {
+    padding: 0;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  .science-conclusion {
+    font-size: 14px;
+  }
+}
+
 /* Element UI Overrides */
 .custom-tabs :deep(.el-tabs__nav-wrap::after) {
   background-color: transparent;
@@ -1165,6 +1291,11 @@ const getFeatureIcon = (key) => {
   border: 1px solid rgba(0,0,0,0.05);
   box-shadow: 0 5px 15px rgba(0,0,0,0.03);
   border-radius: 4px;
+}
+.star-style {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 6px;
 }
 .star-card:hover {
   transform: translateY(-2px);
