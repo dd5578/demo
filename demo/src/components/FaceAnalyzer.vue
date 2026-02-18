@@ -1093,6 +1093,7 @@ const getFeatureIcon = (key) => {
   }
 
   .hero-section {
+    flex-direction: column;
     gap: 20px;
   }
 
@@ -1129,6 +1130,12 @@ const getFeatureIcon = (key) => {
     padding: 18px;
   }
 
+  .summary-text-box {
+    width: 100%;
+    min-width: 0;
+  }
+
+
   .style-info-grid {
     flex-direction: column;
     gap: 18px;
@@ -1152,6 +1159,7 @@ const getFeatureIcon = (key) => {
 
   .summary-content {
     font-size: 13px;
+    padding-left: 12px;
   }
 
   .block-title {
@@ -1162,24 +1170,64 @@ const getFeatureIcon = (key) => {
     font-size: 26px;
   }
 
+  .radar-chart-container {
+    width: 200px;
+    height: 200px;
+  }
+
+  .score-display {
+    left: 50%;
+    top: 50%;
+    width: 100%;
+    transform: translate(-50%, -50%);
+  }
+
   .science-block {
-    padding: 20px 16px;
+    padding: 18px 14px;
   }
 
   .science-content-premium {
-    padding: 0;
-    max-width: 100%;
+    padding: 0 10px;
+    width: 100%;
+    max-width: none;
     word-break: break-word;
+    margin: 0 auto;
+    text-align: center;
   }
 
   .science-body {
-    padding: 0;
+    padding: 0 10px;
     font-size: 14px;
     line-height: 1.8;
+    text-align: center;
   }
 
   .science-conclusion {
     font-size: 14px;
+  }
+
+  .style-guide-grid {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .guide-box {
+    min-width: 0;
+    padding: 16px;
+  }
+
+  .hair-tag {
+    font-size: 12px;
+    margin: 4px;
+  }
+
+  .color-rec {
+    font-size: 12px;
+  }
+
+  .color-group span:not(.c-label) {
+    font-size: 12px;
+    padding: 2px 6px;
   }
 }
 
