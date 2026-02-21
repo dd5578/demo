@@ -1219,8 +1219,8 @@ const getFeatureIcon = (key) => {
   }
 
   .science-block {
-    padding: 16px 8px;
-    text-align: center;
+    padding: 18px 12px;
+    text-align: left;
   }
 
   .science-content-premium {
@@ -1229,15 +1229,15 @@ const getFeatureIcon = (key) => {
     max-width: none;
     word-break: break-word;
     margin: 0 auto;
-    text-align: center;
+    text-align: left;
     box-sizing: border-box;
   }
 
   .science-body {
     padding: 0;
-    font-size: 14px;
-    line-height: 1.8;
-    text-align: center;
+    font-size: 15px;
+    line-height: 1.9;
+    text-align: justify;
     box-sizing: border-box;
   }
 
@@ -1253,10 +1253,13 @@ const getFeatureIcon = (key) => {
 
   .guide-box {
     min-width: 0;
-    padding: 16px;
+    padding: 10px 0;
     width: 100%;
     margin: 0 auto;
     max-width: none;
+    border: none;
+    background: transparent;
+    box-shadow: none;
   }
 
   .hair-tag {
