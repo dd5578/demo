@@ -9,6 +9,28 @@ const getDistance = (p1, p2) => {
 
 const getRatio = (n, d) => d === 0 ? 0 : n / d
 
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value))
+const average = (values) => values.length ? values.reduce((sum, v) => sum + v, 0) / values.length : 0
+const uniqueList = (list) => Array.from(new Set(list))
+const selectRandom = (arr) => arr[Math.floor(Math.random() * arr.length)]
+
+// --- Scoring Helpers ---
+
+// Gaussian-based Interval Score
+// Returns 100 if within [min, max], otherwise decays based on sigma
+const intervalScore = (value, min, max, sigma) => {
+  if (value >= min && value <= max) return 100
+  const diff = value < min ? min - value : value - max
+  return 100 * Math.exp(-Math.pow(diff, 2) / (2 * Math.pow(sigma, 2)))
+}
+
+// Standard Deviation of Deviations
+const calculateHarmony = (deviations) => {
+  const mean = deviations.reduce((a, b) => a + b, 0) / deviations.length
+  const variance = deviations.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / deviations.length
+  return Math.sqrt(variance)
+}
+
 // --- Feature Analysis Engine ---
 
 export const analyzeFaceMetrics = (input) => {
@@ -160,11 +182,121 @@ export const analyzeFaceMetrics = (input) => {
   }
 }
 
+// --- Advanced Scoring System (New Algorithm) ---
+
+const shapeIdeals = {
+  oval: { widthToHeight: 0.76, jawToCheek: 0.82 },
+  round: { widthToHeight: 0.86, jawToCheek: 0.9 },
+  square: { widthToHeight: 0.84, jawToCheek: 0.93 },
+  long: { widthToHeight: 0.7, jawToCheek: 0.82 },
+  oblong: { widthToHeight: 0.69, jawToCheek: 0.88 },
+  heart: { widthToHeight: 0.77, jawToCheek: 0.74 },
+  diamond: { widthToHeight: 0.75, jawToCheek: 0.8 }
+}
+
+const calculateBoneScore = (m, faceShapeType) => {
+  // 40% Weight - Structure & Proportions
+  const shapeIdeal = shapeIdeals[faceShapeType] || shapeIdeals.oval
+  
+  // 1. Face Shape (20%)
+  const shapeScore = intervalScore(m.dimensions.widthToHeight, shapeIdeal.widthToHeight - 0.05, shapeIdeal.widthToHeight + 0.05, 0.1)
+  
+  // 2. Jaw/Cheek (20%)
+  const jawScore = intervalScore(m.dimensions.jawToCheek, shapeIdeal.jawToCheek - 0.05, shapeIdeal.jawToCheek + 0.05, 0.1)
+  
+  // 3. Three Courts Balance (60%) - The Foundation
+  const courtScore = (
+    intervalScore(m.courts.upper, 0.3, 0.36, 0.08) +
+    intervalScore(m.courts.middle, 0.3, 0.36, 0.08) +
+    intervalScore(m.courts.lower, 0.3, 0.36, 0.08)
+  ) / 3
+
+  return shapeScore * 0.2 + jawScore * 0.2 + courtScore * 0.6
+}
+
+const calculateFeatureScore = (m) => {
+  // 35% Weight - Five Senses Details
+  
+  // 1. Eyes (40%)
+  const eyeScore = (
+    intervalScore(m.eyes.spacingRatio, 0.9, 1.15, 0.25) + // Spacing
+    intervalScore(m.eyes.roundness, 0.3, 0.6, 0.2) // Shape
+  ) / 2
+  
+  // 2. Nose (30%)
+  const noseScore = (
+    intervalScore(m.nose.widthRatio, 0.17, 0.23, 0.06) +
+    intervalScore(m.nose.lengthRatio, 0.3, 0.38, 0.06)
+  ) / 2
+  
+  // 3. Lips (30%)
+  const lipScore = intervalScore(m.lips.fullness, 0.25, 0.5, 0.15)
+  
+  return eyeScore * 0.4 + noseScore * 0.3 + lipScore * 0.3
+}
+
+const calculateHarmonyScore = (m) => {
+  // 25% Weight - Coherence
+  // Calculate standard deviation of the deviations from ideal
+  const deviations = [
+    Math.abs(m.courts.upper - 0.33),
+    Math.abs(m.courts.middle - 0.33),
+    Math.abs(m.courts.lower - 0.33),
+    Math.abs(m.eyes.spacingRatio - 1.0) * 0.2, // Scale down
+    Math.abs(m.nose.widthRatio - 0.2)
+  ]
+  
+  const stdDev = calculateHarmony(deviations)
+  
+  // Lower stdDev is better. 
+  // 0 -> 100, 0.05 -> ~80, 0.1 -> ~60
+  // Formula: 100 * e^(-k * x^2)
+  return 100 * Math.exp(-Math.pow(stdDev, 2) / (2 * Math.pow(0.08, 2)))
+}
+
+const analyzeStyleTendency = (m, faceShapeType, eyeType, isMale) => {
+  // Styles: 清冷 (Cold), 甜美 (Sweet), 高级 (High-Fashion), 少年/少女 (Youth)
+  
+  let scores = {
+    cold: 0,
+    sweet: 0,
+    highFashion: 0,
+    youth: 0
+  }
+  
+  // 1. Face Shape Influence
+  if (['long', 'oblong'].includes(faceShapeType)) { scores.cold += 20; scores.highFashion += 15 }
+  if (['round', 'oval'].includes(faceShapeType)) { scores.sweet += 20; scores.youth += 20 }
+  if (['square', 'diamond'].includes(faceShapeType)) { scores.highFashion += 25; scores.cold += 10 }
+  if (['heart'].includes(faceShapeType)) { scores.sweet += 15; scores.youth += 15 }
+  
+  // 2. Proportions Influence
+  if (m.courts.middle > 0.35) { scores.cold += 15; scores.highFashion += 10 } // Long middle court = mature/cold
+  if (m.courts.middle < 0.32) { scores.sweet += 15; scores.youth += 15 } // Short middle court = young/sweet
+  
+  // 3. Features Influence
+  if (eyeType === 'round') { scores.sweet += 20; scores.youth += 15 }
+  if (eyeType === 'long' || eyeType === 'up') { scores.cold += 15; scores.highFashion += 15 }
+  
+  if (m.dimensions.jawToCheek > 0.88) { scores.highFashion += 15; scores.cold += 10 } // Strong jaw
+  else { scores.sweet += 10; scores.youth += 10 }
+  
+  if (m.nose.widthRatio < 0.19) { scores.cold += 10; scores.highFashion += 10 }
+  if (m.lips.fullness > 0.35) { scores.sweet += 10; scores.highFashion += 5 }
+  
+  // Normalize to percentage
+  const total = scores.cold + scores.sweet + scores.highFashion + scores.youth
+  const result = Object.entries(scores).map(([key, val]) => ({
+    id: key,
+    score: Math.round((val / total) * 100),
+    name: key === 'cold' ? '清冷感' : key === 'sweet' ? (isMale ? '亲和感' : '甜美感') : key === 'highFashion' ? '高级感' : (isMale ? '少年感' : '少女感')
+  })).sort((a, b) => b.score - a.score)
+  
+  return result
+}
+
 // --- Content Generation Engine ---
 
-const selectRandom = (arr) => arr[Math.floor(Math.random() * arr.length)]
-
-// Text Libraries (Greatly Expanded)
 const descriptors = {
   face: {
     oval: ['鹅蛋脸', '椭圆脸', '标准脸'],
@@ -183,12 +315,7 @@ const descriptors = {
   }
 }
 
-const clamp = (value, min, max) => Math.min(max, Math.max(min, value))
-const scoreFromRange = (value, ideal, tolerance) => clamp(100 - Math.abs(value - ideal) / tolerance * 100, 0, 100)
 const tagScore = (presetTags, tags) => presetTags.reduce((sum, tag) => sum + (tags.includes(tag) ? 1 : 0), 0)
-const normalizeDiff = (value, ideal, tolerance) => clamp(Math.abs(value - ideal) / tolerance, 0, 2)
-const average = (values) => values.length ? values.reduce((sum, v) => sum + v, 0) / values.length : 0
-const uniqueList = (list) => Array.from(new Set(list))
 const selectTopByTags = (items, tags, limit) => {
   return items
     .map((item) => ({ item, score: tagScore(item.tags || [], tags) }))
@@ -200,7 +327,7 @@ const selectTopByTags = (items, tags, limit) => {
 const buildStyleTags = (style, faceShape, eyeType, isMale) => {
   const text = `${style.main} ${style.sub} ${style.desc}`
   const tags = [faceShape, eyeType, isMale ? '男士' : '女生']
-  if (/(甜美|初恋|可爱|元气)/.test(text)) tags.push('甜美')
+  if (/(甜美|初恋|可爱|元气|亲和)/.test(text)) tags.push('甜美')
   if (/(清冷|疏离|高冷|冷艳|清爽)/.test(text)) tags.push('清冷')
   if (/(气场|御姐|端庄|超模|硬汉|成熟|高级)/.test(text)) tags.push('气场')
   if (/(文艺|雅痞|古典|温婉)/.test(text)) tags.push('文艺')
@@ -228,43 +355,8 @@ const buildMetricTags = (m, faceShape, eyeType) => {
   return tags
 }
 
-const shapeIdeals = {
-  oval: { widthToHeight: 0.76, jawToCheek: 0.82 },
-  round: { widthToHeight: 0.86, jawToCheek: 0.9 },
-  square: { widthToHeight: 0.84, jawToCheek: 0.93 },
-  long: { widthToHeight: 0.7, jawToCheek: 0.82 },
-  oblong: { widthToHeight: 0.69, jawToCheek: 0.88 },
-  heart: { widthToHeight: 0.77, jawToCheek: 0.74 },
-  diamond: { widthToHeight: 0.75, jawToCheek: 0.8 }
-}
-
-const getObjectiveScore = (m, faceShapeType) => {
-  const courtDeviation = average([
-    normalizeDiff(m.courts.upper, 1 / 3, 0.07),
-    normalizeDiff(m.courts.middle, 1 / 3, 0.07),
-    normalizeDiff(m.courts.lower, 1 / 3, 0.07)
-  ])
-  const fiveEyeDeviation = normalizeDiff(m.eyes.spacingRatio, 1.0, 0.22)
-  const shapeIdeal = shapeIdeals[faceShapeType] || shapeIdeals.oval
-  const shapeDeviation = average([
-    normalizeDiff(m.dimensions.widthToHeight, shapeIdeal.widthToHeight, 0.08),
-    normalizeDiff(m.dimensions.jawToCheek, shapeIdeal.jawToCheek, 0.1)
-  ])
-  const chinRatio = m.dimensions.chinWidth / m.dimensions.jawWidth
-  const browRatio = m.brows.arch / m.dimensions.width
-  const detailDeviation = average([
-    normalizeDiff(chinRatio, 0.32, 0.18),
-    normalizeDiff(m.nose.widthRatio, 0.21, 0.07),
-    normalizeDiff(m.nose.lengthRatio, 0.33, 0.08),
-    normalizeDiff(browRatio, 0.04, 0.03),
-    normalizeDiff(m.lips.widthRatio, 0.38, 0.1),
-    normalizeDiff(m.eyes.roundness, 0.42, 0.18)
-  ])
-  const weightedDeviation = courtDeviation * 0.38 + fiveEyeDeviation * 0.28 + shapeDeviation * 0.2 + detailDeviation * 0.14
-  const base = 98 - weightedDeviation * 18 - (courtDeviation * 6 + fiveEyeDeviation * 4)
-  return clamp(Math.round(base), 70, 96)
-}
-
+// ... Presets (Keeping existing presets but ensuring they are defined) ...
+// (Re-declaring presets here for completeness, though in a real refactor I might move them to a data file)
 const makeupPresets = [
   { id: 'base-01', gender: 'female', category: 'base', tags: ['清透', '甜美', '日常'], text: '轻薄水润底妆，局部遮瑕提亮，营造干净素颜感。' },
   { id: 'base-02', gender: 'female', category: 'base', tags: ['清冷', '控油', '通勤'], text: '柔雾哑光底妆，压制T区油光，整体质感干净利落。' },
@@ -663,6 +755,12 @@ const getAdviceItems = (presets, tags, limit, extra = []) => {
 
 const starTagSet = new Set(['round', 'square', 'long', 'oval', 'heart', 'diamond', 'oblong', 'up', 'down', '清冷', '甜美', '气场', '文艺', '少年', '明艳', '成熟', '高级', '温柔', '清爽'])
 
+const tagDisplayMap = {
+  round: '圆脸', square: '方脸', long: '长脸', oval: '鹅蛋脸', heart: '心形脸', diamond: '菱形脸', oblong: '长方脸',
+  up: '上扬眼', down: '下垂眼',
+  清冷: '清冷感', 甜美: '甜美感', 气场: '气场感', 文艺: '文艺感', 少年: '少年感', 明艳: '明艳感', 成熟: '成熟感', 高级: '高级感', 温柔: '温柔感', 清爽: '清爽感'
+}
+
 const getStarReferences = (style, isMale, faceShape, eyeType, metricTags) => {
   const tags = uniqueList([...buildStyleTags(style, faceShape, eyeType, isMale), ...metricTags])
   const gender = isMale ? 'male' : 'female'
@@ -672,11 +770,15 @@ const getStarReferences = (style, isMale, faceShape, eyeType, metricTags) => {
     .sort((a, b) => b.score - a.score || a.preset.name.localeCompare(b.preset.name))
     .slice(0, 8)
     .map((item) => {
-      const matched = item.preset.tags.filter((tag) => starTagSet.has(tag) && tags.includes(tag)).slice(0, 3)
+      const matched = item.preset.tags
+        .filter((tag) => starTagSet.has(tag) && tags.includes(tag))
+        .slice(0, 3)
+        .map(tag => tagDisplayMap[tag] || tag)
+      
       return {
         name: item.preset.name,
         style: item.preset.style,
-        desc: matched.length ? `在${matched.join('、')}维度接近` : `风格关键词：${item.preset.style}`
+        desc: matched.length ? `在 ${matched.join('、')} 方面与您特征相似` : `风格关键词：${item.preset.style}`
       }
     })
 }
@@ -845,35 +947,40 @@ export const generateReport = (metrics, gender) => {
   else if (m.eyes.roundness < 0.35) eyeType = 'long'
   const eyeTypeName = selectRandom(descriptors.eyes[eyeType])
 
-  // 3. Score Calculation
-  const finalScore = getObjectiveScore(m, faceShapeType)
+  // 3. New Scoring System
+  const boneScore = calculateBoneScore(m, faceShapeType)
+  const featureScore = calculateFeatureScore(m)
+  const harmonyScore = calculateHarmonyScore(m)
+  
+  // Total Score: Bone 40% + Feature 35% + Harmony 25%
+  // Advantage Reinforcement: If any sub-score > 85, add small bonus
+  let baseScore = boneScore * 0.4 + featureScore * 0.35 + harmonyScore * 0.25
+  if (boneScore > 85 || featureScore > 85 || harmonyScore > 85) {
+    baseScore += 2 // Advantage Bonus
+  }
+  
+  const finalScore = clamp(Math.round(baseScore), 72, 98)
 
-  // 4. Dynamic Summary Generation
+  // 4. Style Analysis
+  const styleTendency = analyzeStyleTendency(m, faceShapeType, eyeType, isMale)
+  const primaryStyle = styleTendency[0]
+  
+  const style = {
+    main: primaryStyle.name.replace('感', ''), // e.g. 清冷
+    sub: styleTendency[1] ? styleTendency[1].name : '',
+    desc: `风格匹配度 ${primaryStyle.score}%`
+  }
+  
+  const metricTags = buildMetricTags(m, faceShapeType, eyeType)
+  const adviceTags = uniqueList([...buildStyleTags(style, faceShapeType, eyeType, isMale), ...metricTags])
+
+  // 5. Dynamic Summary Generation
   const summaryTemplates = [
     `您的面部轮廓${m.dimensions.jawToCheek > 0.85 ? '清晰硬朗' : '柔和流畅'}，配合${eyeTypeName}，${isMale ? '尽显阳刚之气' : '散发独特魅力'}。`,
     `五官比例${Math.abs(m.courts.middle - m.courts.lower) < 0.05 ? '非常协调' : '极具个人特色'}，${faceShapeName}为您增添了几分${isMale ? '成熟稳重' : '温婉气质'}。`,
     `整体气质${m.eyes.roundness > 0.4 ? '灵动活泼' : '高冷优雅'}，${faceShapeName}是您的最大特色，让人过目难忘。`
   ]
   const summary = selectRandom(summaryTemplates)
-
-  // 5. Style Positioning Logic
-  const getStyle = () => {
-    if (isMale) {
-      if (faceShapeType === 'round' || m.eyes.roundness > 0.45) return { main: '阳光暖男', sub: '少年感', desc: '亲和力强，笑容温暖' }
-      if (faceShapeType === 'square' || faceShapeType === 'long' || faceShapeType === 'oblong') return { main: '型男硬汉', sub: '成熟稳重', desc: '荷尔蒙爆棚，气场强大' }
-      if (faceShapeType === 'oval' || faceShapeType === 'heart') return { main: '清爽校草', sub: '斯文败类', desc: '干净利落，气质出众' }
-      return { main: '日系雅痞', sub: '文艺青年', desc: '个性鲜明，独特审美' }
-    } else {
-      if (faceShapeType === 'round') return { main: '甜美可爱', sub: '初恋脸', desc: '元气满满，毫无攻击性' }
-      if (faceShapeType === 'square' || faceShapeType === 'oblong') return { main: '高级超模', sub: '大气端庄', desc: '骨相优越，可塑性强' }
-      if (eyeType === 'up' || faceShapeType === 'diamond') return { main: '明艳御姐', sub: '冷艳美人', desc: '气场全开，美艳动人' }
-      if (faceShapeType === 'oval') return { main: '古典温婉', sub: '大家闺秀', desc: '耐看型美女，气质如兰' }
-      return { main: '纯欲风格', sub: '氛围感', desc: '又纯又欲，撩人心弦' }
-    }
-  }
-  const style = getStyle()
-  const metricTags = buildMetricTags(m, faceShapeType, eyeType)
-  const adviceTags = uniqueList([...buildStyleTags(style, faceShapeType, eyeType, isMale), ...metricTags])
 
   // 6. Detailed Feature Analysis (Non-repetitive)
   const features = {
@@ -977,8 +1084,8 @@ export const generateReport = (metrics, gender) => {
   const colors = getColorAdvice(style, isMale, faceShapeType, eyeType, metricTags)
 
   return {
-    welcome: welcome, // New
-    dailyTip: dailyTip, // New
+    welcome: welcome, 
+    dailyTip: dailyTip, 
     score: finalScore,
     summary: summary,
     style: {
@@ -991,7 +1098,7 @@ export const generateReport = (metrics, gender) => {
       advantages: [
         `五官比例${finalScore > 85 ? '堪称完美' : '协调舒适'}`,
         `${faceShapeName}极具辨识度`,
-        `气质${style.desc.substring(0, 4)}`
+        `气质${style.desc}`
       ],
       directions: [
         `尝试${style.sub}风格穿搭`,
@@ -1021,8 +1128,8 @@ export const generateReport = (metrics, gender) => {
     },
     physiognomy: physiognomy,
     scienceAnalysis: scienceAnalysis,
-    occasionAdvice: occasionAdvice, // New
-    makeupGuide: makeupGuide, // New
+    occasionAdvice: occasionAdvice, 
+    makeupGuide: makeupGuide, 
     advice: {
       skincare: [{ title: "日常护理", items: skincareAdvice.length ? skincareAdvice : ["早晚洁面", "防晒"] }],
       makeup: [{ title: "修饰技巧", items: makeupAdvice }],

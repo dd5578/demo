@@ -1124,7 +1124,14 @@ const getFeatureIcon = (key) => {
     padding: 32px;
   }
 
+  .hero-section {
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
+
   .summary-text-box {
+    width: 100%;
     min-width: 0;
   }
 
@@ -1758,31 +1765,63 @@ const getFeatureIcon = (key) => {
 /* Mobile Adjustments for New Sections */
 @media (max-width: 480px) {
   .science-block-new {
-    padding: 30px 15px;
+    padding: 25px 10px;
+    margin-top: 40px;
   }
   
   .science-text-body {
-    padding: 0 5px; /* Less padding on mobile */
+    padding: 0; /* Remove side padding on mobile to maximize width */
     font-size: 15px;
     line-height: 1.8;
+    text-align: justify;
+  }
+
+  .science-intro-new {
+    padding: 0;
   }
   
   .quote-symbol.left {
-    left: -2px;
+    left: -5px;
+    top: -10px;
   }
   
   .quote-symbol.right {
-    right: -2px;
-  }
-  
-  .style-section {
-    border: none; /* Cleaner look on mobile */
-    padding: 10px 0;
-    background: transparent;
+    right: -5px;
+    bottom: -15px;
   }
   
   .style-guide-container {
-    gap: 10px;
+    gap: 20px;
+    width: 100%; /* Ensure container takes full width */
+    box-sizing: border-box;
+  }
+
+  .style-section {
+    border: none;
+    padding: 0;
+    background: transparent;
+    width: 100%; /* Ensure full width */
+    box-sizing: border-box;
+    margin: 0; /* Reset margins */
+  }
+
+  .style-content {
+    text-align: center; /* Keep centered as per design, but ensure width is handled */
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .hair-tag-new {
+    font-size: 13px;
+    margin: 3px;
+    padding: 4px 10px;
+  }
+  
+  .color-tags {
+    justify-content: center;
   }
 }
 </style>
