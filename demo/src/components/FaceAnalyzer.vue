@@ -465,7 +465,14 @@ const handleFileChange = (uploadFile) => {
 // Camera Logic
 const startCamera = async () => {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: 'user',
+        width: { ideal: 720 },
+        height: { ideal: 960 },
+        aspectRatio: { ideal: 0.75 }
+      }
+    })
     if (video.value) {
       video.value.srcObject = stream
       isCameraOpen.value = true
@@ -520,6 +527,9 @@ const analyzeFace = async () => {
       try {
         const metrics = analyzeFaceMetrics(detections, gender.value)
         analysisResult.value = generateReport(metrics, gender.value)
+        nextTick(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        })
       } catch (innerError) {
         console.error('Analysis logic error:', innerError)
         ElMessage.error('生成分析报告时出错')
@@ -677,6 +687,31 @@ const getFeatureIcon = (key) => {
   border-color: var(--accent-gold);
   background: #fff;
   box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+}
+
+.camera-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.video-wrapper {
+  width: 100%;
+  max-width: 360px;
+  aspect-ratio: 3 / 4;
+  background: #f7f3ec;
+  border: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.video-feed {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .upload-placeholder-content {
@@ -1184,6 +1219,7 @@ const getFeatureIcon = (key) => {
 
   .science-block {
     padding: 18px 14px;
+    text-align: center;
   }
 
   .science-content-premium {
@@ -1193,6 +1229,7 @@ const getFeatureIcon = (key) => {
     word-break: break-word;
     margin: 0 auto;
     text-align: center;
+    box-sizing: border-box;
   }
 
   .science-body {
@@ -1200,6 +1237,7 @@ const getFeatureIcon = (key) => {
     font-size: 14px;
     line-height: 1.8;
     text-align: center;
+    box-sizing: border-box;
   }
 
   .science-conclusion {
@@ -1214,6 +1252,8 @@ const getFeatureIcon = (key) => {
   .guide-box {
     min-width: 0;
     padding: 16px;
+    width: 100%;
+    margin: 0 auto;
   }
 
   .hair-tag {
