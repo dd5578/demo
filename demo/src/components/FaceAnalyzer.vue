@@ -161,6 +161,7 @@
           <!-- Star Match -->
           <div class="section-block" v-if="analysisResult.starMatch">
             <div class="block-title">参考明星风格 / CELEBRITY</div>
+            <div class="star-legend">说明：oval=鹅蛋脸、round=圆脸、square=方脸、long=长脸、heart=心形脸、diamond=菱形脸、oblong=长方脸、up=上扬眼、down=下垂眼，其余为风格气质标签。</div>
             <div class="star-grid">
               <div v-for="star in analysisResult.starMatch" :key="star.name" class="star-card">
                 <div class="star-name">{{ star.name }}</div>
@@ -1218,12 +1219,12 @@ const getFeatureIcon = (key) => {
   }
 
   .science-block {
-    padding: 18px 14px;
+    padding: 16px 8px;
     text-align: center;
   }
 
   .science-content-premium {
-    padding: 0 10px;
+    padding: 0;
     width: 100%;
     max-width: none;
     word-break: break-word;
@@ -1233,7 +1234,7 @@ const getFeatureIcon = (key) => {
   }
 
   .science-body {
-    padding: 0 10px;
+    padding: 0;
     font-size: 14px;
     line-height: 1.8;
     text-align: center;
@@ -1247,6 +1248,7 @@ const getFeatureIcon = (key) => {
   .style-guide-grid {
     flex-direction: column;
     gap: 14px;
+    align-items: stretch;
   }
 
   .guide-box {
@@ -1254,6 +1256,7 @@ const getFeatureIcon = (key) => {
     padding: 16px;
     width: 100%;
     margin: 0 auto;
+    max-width: none;
   }
 
   .hair-tag {
@@ -1374,7 +1377,14 @@ const getFeatureIcon = (key) => {
   letter-spacing: 1px;
 }
 
-/* Updated Star Cards */
+.star-legend {
+  font-size: 12px;
+  color: #888;
+  margin: 8px auto 16px;
+  text-align: center;
+  line-height: 1.6;
+}
+
 .star-card {
   border: 1px solid rgba(0,0,0,0.05);
   box-shadow: 0 5px 15px rgba(0,0,0,0.03);
@@ -1463,13 +1473,18 @@ const getFeatureIcon = (key) => {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
+  width: 100%;
+  justify-content: center;
+  box-sizing: border-box;
 }
 .guide-box {
-  flex: 1;
+  flex: 1 1 280px;
   min-width: 280px;
   border: 1px solid #eee;
   padding: 20px;
   background: #fff;
+  max-width: 360px;
+  box-sizing: border-box;
 }
 .guide-title {
   margin: 0 0 15px 0;
