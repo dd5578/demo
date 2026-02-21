@@ -288,23 +288,38 @@
           <!-- Hairstyle & Colors -->
           <div class="section-block" v-if="analysisResult.hairstyle">
             <div class="block-title">发型与色彩 / STYLE GUIDE</div>
-            <div class="style-guide-grid">
-              <div class="guide-box">
-                 <h4 class="guide-title">💇‍♀️ 推荐发型</h4>
-                 <div class="tag-cloud">
-                   <span v-for="hair in analysisResult.hairstyle" :key="hair" class="hair-tag">{{ hair }}</span>
+            <div class="style-guide-container">
+              <!-- Hairstyle -->
+              <div class="style-section">
+                 <div class="style-section-header">
+                   <span class="style-icon">💇‍♀️</span>
+                   <span class="style-name">推荐发型</span>
+                 </div>
+                 <div class="style-content">
+                   <span v-for="hair in analysisResult.hairstyle" :key="hair" class="hair-tag-new">{{ hair }}</span>
                  </div>
               </div>
-              <div class="guide-box">
-                 <h4 class="guide-title">🎨 色彩建议</h4>
-                 <div class="color-rec">
-                   <div class="color-group">
-                     <span class="c-label">适合:</span>
-                     <span v-for="c in analysisResult.colors.suitable" :key="c">{{ c }}</span>
+              
+              <div class="style-divider-mobile"></div>
+
+              <!-- Colors -->
+              <div class="style-section">
+                 <div class="style-section-header">
+                   <span class="style-icon">🎨</span>
+                   <span class="style-name">色彩建议</span>
+                 </div>
+                 <div class="style-content">
+                   <div class="color-row">
+                     <span class="color-label suitable">适合</span>
+                     <div class="color-tags">
+                       <span v-for="c in analysisResult.colors.suitable" :key="c" class="color-tag-new">{{ c }}</span>
+                     </div>
                    </div>
-                   <div class="color-group avoid">
-                     <span class="c-label">避免:</span>
-                     <span v-for="c in analysisResult.colors.avoid" :key="c">{{ c }}</span>
+                   <div class="color-row">
+                     <span class="color-label avoid">避免</span>
+                     <div class="color-tags">
+                       <span v-for="c in analysisResult.colors.avoid" :key="c" class="color-tag-new avoid">{{ c }}</span>
+                     </div>
                    </div>
                  </div>
               </div>
@@ -317,23 +332,31 @@
           </div>
 
           <!-- Science vs Magic (Moved to End) -->
-          <div class="section-block science-block" v-if="analysisResult.scienceAnalysis">
-            <div class="block-title-premium">
-              <span class="deco-l">☙</span> 科学与玄学 <span class="deco-r">❧</span>
+          <div class="section-block science-block-new" v-if="analysisResult.scienceAnalysis">
+            <div class="science-header-new">
+              <span class="deco-symbol">☙</span>
+              <span class="science-title-text">科学与玄学</span>
+              <span class="deco-symbol">❧</span>
             </div>
-            <div class="science-content-premium">
-              <p class="science-intro">{{ analysisResult.scienceAnalysis.intro }}</p>
-              <div class="science-body">
-                <span class="quote-mark-l">“</span>
-                {{ analysisResult.scienceAnalysis.analysis }}
-                <span class="quote-mark-r">”</span>
+            
+            <div class="science-container-new">
+              <div class="science-intro-new">{{ analysisResult.scienceAnalysis.intro }}</div>
+              
+              <div class="science-main-content">
+                <div class="quote-symbol left">“</div>
+                <div class="science-text-body">
+                  {{ analysisResult.scienceAnalysis.analysis }}
+                </div>
+                <div class="quote-symbol right">”</div>
               </div>
-              <div class="science-divider">
+
+              <div class="science-divider-new">
                 <span class="line"></span>
                 <span class="star">★</span>
                 <span class="line"></span>
               </div>
-              <p class="science-conclusion">{{ analysisResult.scienceAnalysis.conclusion }}</p>
+              
+              <div class="science-conclusion-new">{{ analysisResult.scienceAnalysis.conclusion }}</div>
             </div>
           </div>
 
@@ -1471,54 +1494,295 @@ const getFeatureIcon = (key) => {
   color: #8d6e3f;
 }
 
-/* Style Guide */
-.style-guide-grid {
+/* Style Guide New */
+.style-guide-container {
   display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  width: 100%;
+  flex-direction: column;
+  gap: 30px;
+}
+
+@media (min-width: 600px) {
+  .style-guide-container {
+    flex-direction: row;
+    gap: 20px;
+  }
+}
+
+.style-section {
+  flex: 1;
+  background: #fdfdfd;
+  padding: 15px;
+  border-radius: 4px;
+  border: 1px dashed #eee;
+}
+
+.style-section-header {
+  display: flex;
+  align-items: center;
   justify-content: center;
-  box-sizing: border-box;
-}
-.guide-box {
-  flex: 1 1 280px;
-  min-width: 280px;
-  border: 1px solid #eee;
-  padding: 20px;
-  background: #fff;
-  max-width: 360px;
-  box-sizing: border-box;
-}
-.guide-title {
-  margin: 0 0 15px 0;
-  font-size: 15px;
-  text-align: center;
-  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 15px;
   padding-bottom: 10px;
+  border-bottom: 1px solid #f0f0f0;
+  gap: 8px;
 }
-.tag-cloud {
+
+.style-icon {
+  font-size: 18px;
+}
+
+.style-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: #555;
+}
+
+.style-content {
   text-align: center;
 }
-.hair-tag {
+
+.hair-tag-new {
   display: inline-block;
-  border: 1px solid #ddd;
-  padding: 5px 10px;
-  margin: 5px;
+  padding: 6px 12px;
+  margin: 4px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
   font-size: 13px;
   color: #666;
-  background: #fafafa;
+  transition: all 0.2s;
 }
-.color-rec {
-  font-size: 13px;
+
+.hair-tag-new:hover {
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
 }
-.color-group { margin-bottom: 15px; line-height: 1.6; }
-.color-group .c-label { font-weight: bold; margin-right: 5px; display: block; margin-bottom: 5px; }
-.color-group span:not(.c-label) {
-  margin-right: 8px;
-  display: inline-block;
-  background: #f0f0f0;
+
+.style-divider-mobile {
+  height: 1px;
+  background: #eee;
+  margin: 0 20px;
+  display: block;
+}
+
+@media (min-width: 600px) {
+  .style-divider-mobile {
+    display: none;
+  }
+}
+
+.color-row {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.color-label {
+  font-size: 12px;
+  font-weight: bold;
   padding: 2px 8px;
   border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
-.color-group.avoid { color: #999; }
+
+.color-label.suitable {
+  background: #e6f7e6;
+  color: #4caf50;
+}
+
+.color-label.avoid {
+  background: #ffebee;
+  color: #ef5350;
+}
+
+.color-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.color-tag-new {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  border-radius: 50%;
+  font-size: 12px; /* fallback text */
+  background: #eee; /* fallback color */
+  overflow: hidden;
+  text-indent: 100%;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Fallback for text-based colors if needed, but assuming user wants visual blocks, 
+   actually the data is strings like "Deep Autumn", so we should display text.
+   Let's revert to text display for clarity as per previous design. */
+.color-tag-new {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  background: #f5f5f5;
+  color: #555;
+  text-indent: 0;
+  width: auto;
+  height: auto;
+  line-height: normal;
+}
+.color-tag-new.avoid {
+  color: #999;
+  text-decoration: line-through;
+}
+
+/* Science New Styles */
+.science-block-new {
+  margin-top: 60px;
+  padding: 40px 20px;
+  background: #fff;
+  border: 1px solid #eee;
+  position: relative;
+  overflow: hidden;
+}
+
+.science-block-new::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 4px;
+  background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+  opacity: 0.3;
+}
+
+.science-header-new {
+  text-align: center;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.science-title-text {
+  font-size: 18px;
+  letter-spacing: 4px;
+  color: var(--text-primary);
+  font-family: var(--font-serif);
+}
+
+.deco-symbol {
+  color: var(--accent-gold);
+  font-size: 20px;
+  opacity: 0.6;
+}
+
+.science-container-new {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.science-intro-new {
+  text-align: center;
+  font-size: 13px;
+  color: #888;
+  font-style: italic;
+  font-family: 'Times New Roman', serif;
+  margin-bottom: 30px;
+  padding: 0 20px;
+}
+
+.science-main-content {
+  position: relative;
+  padding: 0 10px;
+  margin-bottom: 30px;
+}
+
+.science-text-body {
+  font-size: 16px;
+  line-height: 2;
+  color: #444;
+  text-align: justify;
+  text-justify: inter-ideograph; /* Better CJK justification */
+  padding: 0 20px;
+}
+
+.quote-symbol {
+  position: absolute;
+  font-size: 40px;
+  color: rgba(207, 170, 110, 0.2);
+  font-family: serif;
+  line-height: 1;
+}
+
+.quote-symbol.left {
+  top: -15px;
+  left: -5px;
+}
+
+.quote-symbol.right {
+  bottom: -25px;
+  right: -5px;
+}
+
+.science-divider-new {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin: 30px 0;
+  opacity: 0.4;
+}
+
+.science-divider-new .line {
+  width: 40px;
+  height: 1px;
+  background: var(--accent-gold);
+}
+
+.science-divider-new .star {
+  color: var(--accent-gold);
+  font-size: 10px;
+}
+
+.science-conclusion-new {
+  text-align: center;
+  font-size: 15px;
+  font-weight: bold;
+  color: #8d6e3f;
+  letter-spacing: 1px;
+}
+
+/* Mobile Adjustments for New Sections */
+@media (max-width: 480px) {
+  .science-block-new {
+    padding: 30px 15px;
+  }
+  
+  .science-text-body {
+    padding: 0 5px; /* Less padding on mobile */
+    font-size: 15px;
+    line-height: 1.8;
+  }
+  
+  .quote-symbol.left {
+    left: -2px;
+  }
+  
+  .quote-symbol.right {
+    right: -2px;
+  }
+  
+  .style-section {
+    border: none; /* Cleaner look on mobile */
+    padding: 10px 0;
+    background: transparent;
+  }
+  
+  .style-guide-container {
+    gap: 10px;
+  }
+}
 </style>
